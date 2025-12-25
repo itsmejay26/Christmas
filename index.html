@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Merry Christmas!</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            min-height: 100vh;
+            overflow: hidden;
+            font-family: 'Georgia', serif;
+        }
+
+        #gift-scene {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 1s ease;
+        }
+
+        .gift-box {
+            width: 150px;
+            height: 150px;
+            position: relative;
+            cursor: pointer;
+            transform-style: preserve-3d;
+            transition: transform 0.3s ease;
+        }
+
+        .gift-box:hover {
+            transform: scale(1.1) rotate(-5deg);
+        }
+
+        .gift-body {
+            width: 150px;
+            height: 120px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border-radius: 8px;
+            position: absolute;
+            bottom: 0;
+            box-shadow: 0 10px 30px rgba(231, 76, 60, 0.5);
+        }
+
+        .gift-body::before {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 100%;
+            background: linear-gradient(90deg, #f1c40f, #f39c12);
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .gift-body::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 30px;
+            background: linear-gradient(180deg, #f1c40f, #f39c12);
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .gift-lid {
+            width: 160px;
+            height: 35px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            border-radius: 8px 8px 0 0;
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            transition: transform 0.5s ease;
+            transform-origin: bottom left;
+        }
+
+        .gift-lid::before {
+            content: '';
+            position: absolute;
+            width: 35px;
+            height: 100%;
+            background: linear-gradient(90deg, #f1c40f, #f39c12);
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .gift-bow {
+            position: absolute;
+            top: -40px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 40px;
+        }
+
+        .bow-loop {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #f1c40f, #f39c12);
+            border-radius: 50% 50% 50% 0;
+            position: absolute;
+            top: 10px;
+        }
+
+        .bow-loop.left {
+            left: 0;
+            transform: rotate(-45deg);
+        }
+
+        .bow-loop.right {
+            right: 0;
+            transform: rotate(45deg);
+            border-radius: 50% 50% 0 50%;
+        }
+
+        .bow-center {
+            width: 20px;
+            height: 20px;
+            background: linear-gradient(135deg, #f39c12, #e67e22);
+            border-radius: 50%;
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .gift-box.opening .gift-lid {
+            transform: rotateX(-120deg) translateY(-50px);
+        }
+
+        .click-text {
+            color: #fff;
+            font-size: 24px;
+            margin-top: 40px;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        #camera-scene {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 50;
+        }
+
+        #video-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        #webcam {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        #canvas-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .instruction-text {
+            position: fixed;
+            top: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 20px;
+            text-align: center;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.8);
+            z-index: 200;
+            padding: 15px 30px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 30px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        #emoji-tree-container {
+            position: fixed;
+            pointer-events: none;
+            z-index: 150;
+        }
+
+        .tree-emoji {
+            position: absolute;
+            font-size: 24px;
+            transition: all 0.5s ease;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        #image-gallery {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 160;
+            perspective: 1000px;
+        }
+
+        .gallery-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transform-style: preserve-3d;
+            width: 300px;
+            height: 300px;
+        }
+
+        .gallery-image {
+            position: absolute;
+            width: 200px;
+            height: 150px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            background: linear-gradient(135deg, #1a472a, #2d5a3a);
+        }
+
+        .gallery-image.selected {
+            transform: scale(1.2) translateZ(50px);
+            border-color: #f1c40f;
+            box-shadow: 0 0 50px rgba(241, 196, 15, 0.5);
+        }
+
+        #enlarged-view {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: none;
+            z-index: 170;
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .enlarged-image {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80vmin;
+            height: 60vmin;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 150px;
+            background: linear-gradient(135deg, #1a472a, #2d5a3a);
+            border: 8px solid #f1c40f;
+            box-shadow: 0 0 100px rgba(241, 196, 15, 0.5);
+            animation: christmasGlow 2s infinite;
+        }
+
+        @keyframes christmasGlow {
+            0%, 100% { box-shadow: 0 0 50px rgba(241, 196, 15, 0.5), 0 0 100px rgba(231, 76, 60, 0.3); }
+            50% { box-shadow: 0 0 80px rgba(241, 196, 15, 0.8), 0 0 150px rgba(231, 76, 60, 0.5); }
+        }
+
+        .merry-christmas-text {
+            position: absolute;
+            bottom: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 48px;
+            color: #fff;
+            text-shadow: 0 0 30px #f1c40f, 0 0 60px #e74c3c;
+            animation: textGlow 1.5s infinite;
+        }
+
+        @keyframes textGlow {
+            0%, 100% { text-shadow: 0 0 30px #f1c40f, 0 0 60px #e74c3c; }
+            50% { text-shadow: 0 0 50px #f1c40f, 0 0 100px #e74c3c, 0 0 150px #27ae60; }
+        }
+
+        .snowflake {
+            position: fixed;
+            color: #fff;
+            font-size: 20px;
+            pointer-events: none;
+            z-index: 300;
+            animation: fall linear infinite;
+            opacity: 0.8;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-100vh) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+
+        .christmas-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 250;
+            font-size: 30px;
+            animation: particleBurst 2s forwards;
+        }
+
+        @keyframes particleBurst {
+            0% { opacity: 1; transform: scale(0); }
+            50% { opacity: 1; }
+            100% { opacity: 0; transform: scale(2); }
+        }
+
+        .hand-indicator {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, rgba(241, 196, 15, 0.8), transparent);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 180;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+<body>
+    <div id="gift-scene">
+        <div class="gift-box" id="gift-box">
+            <div class="gift-bow">
+                <div class="bow-loop left"></div>
+                <div class="bow-loop right"></div>
+                <div class="bow-center"></div>
+            </div>
+            <div class="gift-lid"></div>
+            <div class="gift-body"></div>
+        </div>
+        <p class="click-text">Click the gift to open</p>
+    </div>
+
+    <div id="camera-scene">
+        <div id="video-container">
+            <video id="webcam" autoplay playsinline></video>
+            <canvas id="canvas-overlay"></canvas>
+        </div>
+    </div>
+
+    <div id="emoji-tree-container"></div>
+
+    <div id="image-gallery">
+        <div class="gallery-container" id="gallery-container">
+            <div class="gallery-image" data-index="0">🎄</div>
+            <div class="gallery-image" data-index="1">🎅</div>
+            <div class="gallery-image" data-index="2">⛄</div>
+            <div class="gallery-image" data-index="3">🦌</div>
+            <div class="gallery-image" data-index="4">🎁</div>
+        </div>
+    </div>
+
+    <div id="enlarged-view">
+        <div class="enlarged-image" id="enlarged-image">🎄</div>
+        <div class="merry-christmas-text">🎄 Merry Christmas! 🎄</div>
+    </div>
+
+    <p class="instruction-text" id="instruction-text" style="display: none;"></p>
+    <div class="hand-indicator" id="hand-indicator" style="display: none;"></div>
+
+    <script>
+        let currentState = 'gift';
+        let hands = null;
+        let camera = null;
+        let handDetected = false;
+        let handOpen = false;
+        let treeBuilt = false;
+        let treeExploded = false;
+        let galleryActive = false;
+        let enlargedActive = false;
+        let rotationAngle = 0;
+        let selectedIndex = 0;
+        let lastPinchState = false;
+        let pinchCooldown = false;
+        let treeEmojis = [];
+        let handPosition = { x: 0, y: 0 };
+        let synth = null;
+        let musicStarted = false;
+
+        const christmasEmojis = ['🎄', '⭐', '🔴', '🟢', '🟡', '✨', '🎀', '🔔', '❄️', '🎅'];
+        const galleryEmojis = ['🎄', '🎅', '⛄', '🦌', '🎁'];
+
+        async function initTone() {
+            if (!musicStarted) {
+                await Tone.start();
+                musicStarted = true;
+                playBackgroundMusic();
+            }
+        }
+
+        function playBackgroundMusic() {
+            const synth = new Tone.PolySynth(Tone.Synth).toDestination();
+            synth.volume.value = -12;
+
+            const melody = [
+                { notes: ['E4', 'G4'], duration: '4n', time: 0 },
+                { notes: ['E4', 'G4'], duration: '4n', time: 0.5 },
+                { notes: ['E4', 'G4'], duration: '2n', time: 1 },
+                { notes: ['E4', 'G4'], duration: '4n', time: 2 },
+                { notes: ['E4', 'G4'], duration: '4n', time: 2.5 },
+                { notes: ['E4', 'G4'], duration: '2n', time: 3 },
+                { notes: ['E4', 'G4', 'C5'], duration: '4n', time: 4 },
+                { notes: ['C4', 'E4'], duration: '4n', time: 4.5 },
+                { notes: ['D4', 'F4'], duration: '4n', time: 5 },
+                { notes: ['E4', 'G4'], duration: '2n.', time: 5.5 },
+            ];
+
+            const part = new Tone.Part((time, value) => {
+                synth.triggerAttackRelease(value.notes, value.duration, time);
+            }, melody.map(m => [m.time, m]));
+
+            part.loop = true;
+            part.loopEnd = '7';
+            part.start(0);
+            Tone.Transport.start();
+        }
+
+        function playSound(type) {
+            const synth = new Tone.Synth().toDestination();
+            synth.volume.value = -6;
+            
+            if (type === 'open') {
+                synth.triggerAttackRelease('C5', '8n');
+                setTimeout(() => synth.triggerAttackRelease('E5', '8n'), 100);
+                setTimeout(() => synth.triggerAttackRelease('G5', '8n'), 200);
+            } else if (type === 'magic') {
+                const notes = ['C5', 'E5', 'G5', 'C6'];
+                notes.forEach((note, i) => {
+                    setTimeout(() => synth.triggerAttackRelease(note, '16n'), i * 80);
+                });
+            } else if (type === 'select') {
+                synth.triggerAttackRelease('G4', '16n');
+            }
+        }
+
+        function createSnowflakes() {
+            setInterval(() => {
+                if (currentState !== 'gift') {
+                    const snowflake = document.createElement('div');
+                    snowflake.className = 'snowflake';
+                    snowflake.textContent = '❄';
+                    snowflake.style.left = Math.random() * 100 + 'vw';
+                    snowflake.style.animationDuration = (Math.random() * 3 + 4) + 's';
+                    snowflake.style.fontSize = (Math.random() * 15 + 10) + 'px';
+                    document.body.appendChild(snowflake);
+                    
+                    setTimeout(() => snowflake.remove(), 7000);
+                }
+            }, 300);
+        }
+
+        function createParticleBurst(x, y) {
+            for (let i = 0; i < 12; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'christmas-particle';
+                particle.textContent = christmasEmojis[Math.floor(Math.random() * christmasEmojis.length)];
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                
+                const angle = (i / 12) * Math.PI * 2;
+                const distance = 100 + Math.random() * 100;
+                particle.style.setProperty('--tx', Math.cos(angle) * distance + 'px');
+                particle.style.setProperty('--ty', Math.sin(angle) * distance + 'px');
+                
+                document.body.appendChild(particle);
+                
+                particle.animate([
+                    { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+                    { transform: `translate(${Math.cos(angle) * distance}px, ${Math.sin(angle) * distance}px) scale(0)`, opacity: 0 }
+                ], { duration: 1500, easing: 'ease-out' });
+                
+                setTimeout(() => particle.remove(), 1500);
+            }
+        }
+
+        document.getElementById('gift-box').addEventListener('click', async function() {
+            if (currentState !== 'gift') return;
+            
+            await initTone();
+            playSound('open');
+            
+            this.classList.add('opening');
+            createParticleBurst(window.innerWidth / 2, window.innerHeight / 2);
+            
+            setTimeout(() => {
+                document.getElementById('gift-scene').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('gift-scene').style.display = 'none';
+                    document.getElementById('camera-scene').style.display = 'block';
+                    currentState = 'camera';
+                    showInstruction('Bring your hand close to the camera');
+                    initHandTracking();
+                    createSnowflakes();
+                }, 1000);
+            }, 800);
+        });
+
+        function showInstruction(text) {
+            const instructionEl = document.getElementById('instruction-text');
+            instructionEl.textContent = text;
+            instructionEl.style.display = 'block';
+        }
+
+        function hideInstruction() {
+            document.getElementById('instruction-text').style.display = 'none';
+        }
+
+        async function initHandTracking() {
+            const video = document.getElementById('webcam');
+            const canvas = document.getElementById('canvas-overlay');
+            const ctx = canvas.getContext('2d');
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'user', width: 1280, height: 720 } 
+                });
+                video.srcObject = stream;
+                await video.play();
+                
+                canvas.width = video.videoWidth || 1280;
+                canvas.height = video.videoHeight || 720;
+            } catch (err) {
+                console.error('Camera error:', err);
+                showInstruction('Camera access required. Please allow camera access and refresh.');
+                return;
+            }
+
+            hands = new Hands({
+                locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+            });
+
+            hands.setOptions({
+                maxNumHands: 1,
+                modelComplexity: 1,
+                minDetectionConfidence: 0.7,
+                minTrackingConfidence: 0.5
+            });
+
+            hands.onResults(onHandResults);
+
+            camera = new Camera(video, {
+                onFrame: async () => {
+                    await hands.send({ image: video });
+                },
+                width: 1280,
+                height: 720
+            });
+
+            camera.start();
+        }
+
+        function isHandOpen(landmarks) {
+            const fingerTips = [8, 12, 16, 20];
+            const fingerBases = [6, 10, 14, 18];
+            let openFingers = 0;
+
+            for (let i = 0; i < fingerTips.length; i++) {
+                if (landmarks[fingerTips[i]].y < landmarks[fingerBases[i]].y) {
+                    openFingers++;
+                }
+            }
+
+            if (landmarks[4].x > landmarks[3].x) {
+                openFingers++;
+            }
+
+            return openFingers >= 4;
+        }
+
+        function isPinching(landmarks) {
+            const thumbTip = landmarks[4];
+            const indexTip = landmarks[8];
+            const distance = Math.sqrt(
+                Math.pow(thumbTip.x - indexTip.x, 2) +
+                Math.pow(thumbTip.y - indexTip.y, 2)
+            );
+            return distance < 0.05;
+        }
+
+        function getHandCenter(landmarks) {
+            const palm = landmarks[0];
+            return {
+                x: palm.x * window.innerWidth,
+                y: palm.y * window.innerHeight
+            };
+        }
+
+        function buildEmojiTree(centerX, centerY) {
+            const container = document.getElementById('emoji-tree-container');
+            container.innerHTML = '';
+            treeEmojis = [];
+
+            const treeStructure = [
+                { row: 0, emojis: 1, y: -150 },
+                { row: 1, emojis: 3, y: -120 },
+                { row: 2, emojis: 5, y: -90 },
+                { row: 3, emojis: 7, y: -60 },
+                { row: 4, emojis: 9, y: -30 },
+                { row: 5, emojis: 3, y: 0 }
+            ];
+
+            let delay = 0;
+            treeStructure.forEach((row, rowIndex) => {
+                for (let i = 0; i < row.emojis; i++) {
+                    const emoji = document.createElement('div');
+                    emoji.className = 'tree-emoji';
+                    
+                    if (rowIndex === 0) {
+                        emoji.textContent = '⭐';
+                    } else if (rowIndex === 5) {
+                        emoji.textContent = '🟫';
+                    } else {
+                        const emojiOptions = ['🎄', '🔴', '🟢', '🟡', '✨', '🎀', '🔔'];
+                        emoji.textContent = emojiOptions[Math.floor(Math.random() * emojiOptions.length)];
+                    }
+
+                    const offsetX = (i - (row.emojis - 1) / 2) * 25;
+                    emoji.style.left = centerX + offsetX + 'px';
+                    emoji.style.top = centerY + row.y + 'px';
+                    emoji.style.opacity = '0';
+                    emoji.style.transform = 'scale(0)';
+                    
+                    emoji.dataset.originalX = centerX + offsetX;
+                    emoji.dataset.originalY = centerY + row.y;
+                    
+                    container.appendChild(emoji);
+                    treeEmojis.push(emoji);
+
+                    setTimeout(() => {
+                        emoji.style.opacity = '1';
+                        emoji.style.transform = 'scale(1)';
+                    }, delay);
+                    
+                    delay += 50;
+                }
+            });
+
+            playSound('magic');
+        }
+
+        function explodeTree() {
+            treeEmojis.forEach((emoji, index) => {
+                const angle = (index / treeEmojis.length) * Math.PI * 2;
+                const distance = 200 + Math.random() * 200;
+                const targetX = parseFloat(emoji.dataset.originalX) + Math.cos(angle) * distance;
+                const targetY = parseFloat(emoji.dataset.originalY) + Math.sin(angle) * distance;
+                
+                emoji.style.transition = 'all 1s ease-out';
+                emoji.style.left = targetX + 'px';
+                emoji.style.top = targetY + 'px';
+                emoji.style.opacity = '0';
+                emoji.style.transform = 'scale(2) rotate(' + (Math.random() * 720 - 360) + 'deg)';
+            });
+
+            playSound('magic');
+
+            setTimeout(() => {
+                document.getElementById('emoji-tree-container').innerHTML = '';
+                treeEmojis = [];
+                showGallery();
+            }, 1200);
+        }
+
+        function showGallery() {
+            galleryActive = true;
+            document.getElementById('image-gallery').style.display = 'block';
+            showInstruction('Move your hand to rotate • Pinch to select');
+            updateGalleryPositions();
+        }
+
+        function updateGalleryPositions() {
+            const images = document.querySelectorAll('.gallery-image');
+            const radius = 250;
+            
+            images.forEach((img, index) => {
+                const angle = (index / images.length) * Math.PI * 2 + rotationAngle;
+                const x = Math.sin(angle) * radius;
+                const z = Math.cos(angle) * radius - radius;
+                const scale = (z + radius * 2) / (radius * 2) * 0.5 + 0.5;
+                
+                img.style.transform = `translateX(${x}px) translateZ(${z}px) scale(${scale})`;
+                img.style.zIndex = Math.round(scale * 100);
+                img.style.opacity = 0.5 + scale * 0.5;
+                
+                if (Math.abs(angle % (Math.PI * 2)) < 0.5 || Math.abs(angle % (Math.PI * 2) - Math.PI * 2) < 0.5) {
+                    img.classList.add('selected');
+                    selectedIndex = index;
+                } else {
+                    img.classList.remove('selected');
+                }
+            });
+        }
+
+        function showEnlargedView() {
+            enlargedActive = true;
+            galleryActive = false;
+            
+            const enlargedImage = document.getElementById('enlarged-image');
+            enlargedImage.textContent = galleryEmojis[selectedIndex];
+            
+            document.getElementById('enlarged-view').style.display = 'block';
+            document.getElementById('image-gallery').style.display = 'none';
+            showInstruction('Pinch again to go back');
+            
+            playSound('magic');
+            createParticleBurst(window.innerWidth / 2, window.innerHeight / 2);
+        }
+
+        function hideEnlargedView() {
+            enlargedActive = false;
+            galleryActive = true;
+            
+            document.getElementById('enlarged-view').style.display = 'none';
+            document.getElementById('image-gallery').style.display = 'block';
+            showInstruction('Move your hand to rotate • Pinch to select');
+            
+            playSound('select');
+        }
+
+        function onHandResults(results) {
+            const handIndicator = document.getElementById('hand-indicator');
+            
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                const center = getHandCenter(landmarks);
+                
+                handIndicator.style.display = 'block';
+                handIndicator.style.left = (window.innerWidth - center.x) + 'px';
+                handIndicator.style.top = center.y + 'px';
+                
+                handPosition = { x: window.innerWidth - center.x, y: center.y };
+                
+                const currentHandOpen = isHandOpen(landmarks);
+                const currentPinch = isPinching(landmarks);
+
+                if (!handDetected) {
+                    handDetected = true;
+                    showInstruction('Open your hand to summon the Christmas tree');
+                    playSound('select');
+                }
+
+                if (handDetected && !treeBuilt) {
+                    if (currentHandOpen && !handOpen) {
+                        treeBuilt = true;
+                        showInstruction('Close and open your hand to release the magic');
+                        buildEmojiTree(handPosition.x, handPosition.y - 50);
+                    }
+                }
+
+                if (treeBuilt && !treeExploded) {
+                    if (!currentHandOpen && handOpen) {
+                    } else if (currentHandOpen && !handOpen) {
+                        treeExploded = true;
+                        explodeTree();
+                    }
+                }
+
+                if (galleryActive) {
+                    const normalizedX = (center.x - 0.5) * 2;
+                    rotationAngle = normalizedX * Math.PI;
+                    updateGalleryPositions();
+                    
+                    if (currentPinch && !lastPinchState && !pinchCooldown) {
+                        pinchCooldown = true;
+                        showEnlargedView();
+                        setTimeout(() => pinchCooldown = false, 500);
+                    }
+                }
+
+                if (enlargedActive) {
+                    if (currentPinch && !lastPinchState && !pinchCooldown) {
+                        pinchCooldown = true;
+                        hideEnlargedView();
+                        setTimeout(() => pinchCooldown = false, 500);
+                    }
+                }
+
+                handOpen = currentHandOpen;
+                lastPinchState = currentPinch;
+            } else {
+                handIndicator.style.display = 'none';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const images = document.querySelectorAll('.gallery-image');
+            images.forEach((img, index) => {
+                img.style.left = '50%';
+                img.style.top = '50%';
+                img.style.marginLeft = '-100px';
+                img.style.marginTop = '-75px';
+            });
+        });
+    </script>
+</body>
+</html>
