@@ -1,12 +1,11 @@
-<!DOCTYPE html>
+htmlDownloadCopy code<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Merry Christmas!</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <title>Magical Christmas Experience</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <style>
         * {
             margin: 0;
@@ -21,93 +20,1022 @@
             font-family: 'Georgia', serif;
         }
 
-        #gift-scene {
+        .scene {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            z-index: 100;
-            transition: opacity 1s ease;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .scene.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Scene 1 - Gift Box */
+        #scene1 {
+            flex-direction: column;
+            background: #000;
+        }
+
+        .gift-container {
+            perspective: 1000px;
+            cursor: pointer;
         }
 
         .gift-box {
-            width: 150px;
-            height: 150px;
+            width: 200px;
+            height: 200px;
             position: relative;
-            cursor: pointer;
             transform-style: preserve-3d;
-            transition: transform 0.3s ease;
+            animation: float 3s ease-in-out infinite;
         }
 
-        .gift-box:hover {
-            transform: scale(1.1) rotate(-5deg);
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotateY(0deg); }
+            50% { transform: translateY(-20px) rotateY(10deg); }
         }
 
-        .gift-body {
-            width: 150px;
-            height: 120px;
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            border-radius: 8px;
+        .gift-base {
             position: absolute;
+            width: 200px;
+            height: 150px;
             bottom: 0;
-            box-shadow: 0 10px 30px rgba(231, 76, 60, 0.5);
-        }
-
-        .gift-body::before {
-            content: '';
-            position: absolute;
-            width: 30px;
-            height: 100%;
-            background: linear-gradient(90deg, #f1c40f, #f39c12);
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        .gift-body::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 30px;
-            background: linear-gradient(180deg, #f1c40f, #f39c12);
-            top: 50%;
-            transform: translateY(-50%);
+            background: linear-gradient(135deg, #c41e3a 0%, #8b0000 100%);
+            border-radius: 10px;
+            box-shadow: 0 20px 60px rgba(196, 30, 58, 0.5);
+            transition: all 0.5s ease;
         }
 
         .gift-lid {
-            width: 160px;
-            height: 35px;
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            border-radius: 8px 8px 0 0;
             position: absolute;
-            top: -5px;
-            left: -5px;
-            transition: transform 0.5s ease;
-            transform-origin: bottom left;
+            width: 220px;
+            height: 50px;
+            top: 0;
+            left: -10px;
+            background: linear-gradient(135deg, #d42a4a 0%, #9b1010 100%);
+            border-radius: 10px;
+            transform-origin: bottom center;
+            transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         }
 
-        .gift-lid::before {
-            content: '';
+        .gift-box.opening .gift-lid {
+            transform: rotateX(-120deg) translateY(-50px);
+        }
+
+        .ribbon-vertical {
             position: absolute;
-            width: 35px;
+            width: 30px;
             height: 100%;
-            background: linear-gradient(90deg, #f1c40f, #f39c12);
             left: 50%;
             transform: translateX(-50%);
+            background: linear-gradient(90deg, #ffd700 0%, #ffec8b 50%, #ffd700 100%);
         }
 
-        .gift-bow {
+        .ribbon-horizontal {
             position: absolute;
-            top: -40px;
+            width: 100%;
+            height: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: linear-gradient(180deg, #ffd700 0%, #ffec8b 50%, #ffd700 100%);
+        }
+
+        .bow {
+            position: absolute;
+            top: -30px;
             left: 50%;
             transform: translateX(-50%);
-            width: 60px;
-            height: 40px;
+            width: 80px;
+            height: 60px;
         }
+
+        .bow-loop {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffec8b 100%);
+            border-radius: 50% 50% 50% 50%;
+        }
+
+        .bow-loop.left {
+            left: 0;
+            transform: rotate(-30deg);
+        }
+
+        .bow-loop.right {
+            right: 0;
+            transform: rotate(30deg);
+        }
+
+        .bow-center {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: #ffd700;
+            border-radius: 50%;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .gift-text {
+            margin-top: 60px;
+            color: #fff;
+            font-size: 1.5rem;
+            text-align: center;
+            opacity: 0.8;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        .sparkles {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            pointer-events: none;
+        }
+
+        .sparkle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #ffd700;
+            border-radius: 50%;
+            animation: sparkle 2s ease-in-out infinite;
+        }
+
+        @keyframes sparkle {
+            0%, 100% { opacity: 0; transform: scale(0); }
+            50% { opacity: 1; transform: scale(1); }
+        }
+
+        /* Scene 2 - Camera & Hand Detection */
+        #scene2 {
+            flex-direction: column;
+            background: #000;
+        }
+
+        .camera-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        #videoElement {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+            opacity: 0.7;
+        }
+
+        #canvasElement {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .instruction-text {
+            position: absolute;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #fff;
+            font-size: 1.5rem;
+            text-align: center;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 20px 40px;
+            border-radius: 30px;
+            border: 2px solid rgba(255, 215, 0, 0.5);
+            z-index: 10;
+            transition: opacity 0.5s ease;
+        }
+
+        .emoji-tree-container {
+            position: absolute;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .emoji {
+            position: absolute;
+            font-size: 2rem;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+        }
+
+        .emoji.exploding {
+            transition: all 1s ease-out;
+        }
+
+        /* Scene 3 - Photo Selection */
+        #scene3 {
+            background: linear-gradient(135deg, #0a1628 0%, #1a0a28 100%);
+            perspective: 1500px;
+        }
+
+        .photo-carousel {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transform-style: preserve-3d;
+        }
+
+        .carousel-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease-out;
+        }
+
+        .photo-card {
+            position: absolute;
+            width: 280px;
+            height: 350px;
+            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+            transition: all 0.5s ease;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+
+        .photo-card.selected {
+            border-color: #ffd700;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.5);
+            transform: scale(1.1);
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 70%;
+            object-fit: cover;
+        }
+
+        .photo-card .photo-title {
+            padding: 20px;
+            color: #fff;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+
+        .hand-cursor {
+            position: fixed;
+            width: 30px;
+            height: 30px;
+            background: radial-gradient(circle, #ffd700 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 100;
+            transition: transform 0.1s ease;
+        }
+
+        /* Scene 4 - Photo Detail */
+        #scene4 {
+            background: linear-gradient(135deg, #0a1628 0%, #1a0a28 100%);
+            flex-direction: column;
+        }
+
+        .photo-detail {
+            position: relative;
+            max-width: 90%;
+            max-height: 80%;
+            animation: zoomIn 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes zoomIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .photo-detail img {
+            max-width: 100%;
+            max-height: 70vh;
+            border-radius: 20px;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+        }
+
+        .christmas-decorations {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: visible;
+        }
+
+        .decoration {
+            position: absolute;
+            font-size: 2rem;
+            animation: decorFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes decorFloat {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-10px) rotate(10deg); }
+        }
+
+        .merry-text {
+            margin-top: 40px;
+            font-size: 3rem;
+            color: #fff;
+            text-shadow: 0 0 30px #ffd700, 0 0 60px #c41e3a;
+            animation: glowText 2s ease-in-out infinite;
+        }
+
+        @keyframes glowText {
+            0%, 100% { text-shadow: 0 0 30px #ffd700, 0 0 60px #c41e3a; }
+            50% { text-shadow: 0 0 50px #ffd700, 0 0 100px #c41e3a, 0 0 150px #ffd700; }
+        }
+
+        .pinch-hint {
+            position: absolute;
+            bottom: 50px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2rem;
+        }
+
+        /* Snowflakes */
+        .snowflakes {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+            overflow: hidden;
+        }
+
+        .snowflake {
+            position: absolute;
+            color: #fff;
+            font-size: 1rem;
+            opacity: 0.8;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-100vh) rotate(0deg); }
+            100% { transform: translateY(100vh) rotate(360deg); }
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            transition: opacity 0.5s ease;
+        }
+
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255, 215, 0, 0.3);
+            border-top-color: #ffd700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Christmas lights */
+        .christmas-lights {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            z-index: 999;
+            display: flex;
+            justify-content: space-around;
+            padding: 10px;
+        }
+
+        .light-bulb {
+            width: 15px;
+            height: 25px;
+            border-radius: 50%;
+            animation: glow 1.5s ease-in-out infinite;
+        }
+
+        .light-bulb:nth-child(1) { background: #ff0000; animation-delay: 0s; }
+        .light-bulb:nth-child(2) { background: #00ff00; animation-delay: 0.2s; }
+        .light-bulb:nth-child(3) { background: #0000ff; animation-delay: 0.4s; }
+        .light-bulb:nth-child(4) { background: #ffff00; animation-delay: 0.6s; }
+        .light-bulb:nth-child(5) { background: #ff00ff; animation-delay: 0.8s; }
+        .light-bulb:nth-child(6) { background: #00ffff; animation-delay: 1s; }
+        .light-bulb:nth-child(7) { background: #ff0000; animation-delay: 1.2s; }
+        .light-bulb:nth-child(8) { background: #00ff00; animation-delay: 1.4s; }
+
+        @keyframes glow {
+            0%, 100% { opacity: 0.4; box-shadow: none; }
+            50% { opacity: 1; box-shadow: 0 0 20px currentColor; }
+        }
+
+        .wire {
+            position: fixed;
+            top: 20px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: #333;
+            z-index: 998;
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
+
+    <div class="snowflakes" id="snowflakes"></div>
+    <div class="wire"></div>
+    <div class="christmas-lights">
+        <div class="light-bulb"></div>
+        <div class="light-bulb"></div>
+        <div class="light-bulb"></div>
+        <div class="light-bulb"></div>
+        <div class="light-bulb"></div>
+        <div class="light-bulb"></div>
+        <div class="light-bulb"></div>
+        <div class="light-bulb"></div>
+    </div>
+
+    <!-- Scene 1: Gift Opening -->
+    <div class="scene active" id="scene1">
+        <div class="gift-container" id="giftContainer">
+            <div class="sparkles" id="sparkles"></div>
+            <div class="gift-box" id="giftBox">
+                <div class="gift-lid">
+                    <div class="ribbon-vertical"></div>
+                    <div class="bow">
+                        <div class="bow-loop left"></div>
+                        <div class="bow-loop right"></div>
+                        <div class="bow-center"></div>
+                    </div>
+                </div>
+                <div class="gift-base">
+                    <div class="ribbon-vertical"></div>
+                    <div class="ribbon-horizontal"></div>
+                </div>
+            </div>
+        </div>
+        <p class="gift-text">✨ Click the gift to open ✨</p>
+    </div>
+
+    <!-- Scene 2: Camera & Hand Detection -->
+    <div class="scene" id="scene2">
+        <div class="camera-container">
+            <video id="videoElement" autoplay playsinline></video>
+            <canvas id="canvasElement"></canvas>
+            <div class="emoji-tree-container" id="emojiTreeContainer"></div>
+            <p class="instruction-text" id="instructionText">🖐️ Bring your hand close to the camera</p>
+        </div>
+    </div>
+
+    <!-- Scene 3: Photo Selection -->
+    <div class="scene" id="scene3">
+        <div class="photo-carousel" id="photoCarousel">
+            <div class="carousel-container" id="carouselContainer"></div>
+        </div>
+        <div class="hand-cursor" id="handCursor"></div>
+        <p class="instruction-text" id="scene3Instruction">👋 Move your hand to rotate • 🤏 Pinch to select</p>
+    </div>
+
+    <!-- Scene 4: Photo Detail -->
+    <div class="scene" id="scene4">
+        <div class="photo-detail" id="photoDetail">
+            <div class="christmas-decorations" id="christmasDecorations"></div>
+            <img id="detailImage" src="" alt="Selected photo">
+        </div>
+        <h1 class="merry-text">🎄 Merry Christmas! 🎄</h1>
+        <p class="pinch-hint">🤏 Pinch again to go back</p>
+    </div>
+
+    <script>
+        // State management
+        let currentScene = 1;
+        let hands = null;
+        let camera = null;
+        let handDetected = false;
+        let isHandOpen = false;
+        let treeCreated = false;
+        let treeExploded = false;
+        let emojiElements = [];
+        let selectedPhotoIndex = 0;
+        let carouselRotation = 0;
+        let lastPinchTime = 0;
+        let isPinching = false;
+        let handPosition = { x: 0, y: 0 };
+
+        // Photo data with Christmas-themed SVG placeholders
+        const photos = [
+            { title: "Winter Wonderland", color: "#1a5f7a" },
+            { title: "Cozy Fireplace", color: "#8b4513" },
+            { title: "Holiday Feast", color: "#c41e3a" },
+            { title: "Family Gathering", color: "#228b22" },
+            { title: "Snowy Night", color: "#4a5568" }
+        ];
+
+        // Create SVG placeholder images
+        function createPhotoSVG(index, color) {
+            const icons = ['❄️', '🔥', '🍽️', '👨‍👩‍👧‍👦', '🌙'];
+            const svg = `
+                <svg xmlns="http://www.w3.org/2000/svg" width="280" height="245" viewBox="0 0 280 245">
+                    <defs>
+                        <linearGradient id="grad${index}" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:${color};stop-opacity:1" />
+                            <stop offset="100%" style="stop-color:${adjustColor(color, -30)};stop-opacity:1" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="280" height="245" fill="url(#grad${index})"/>
+                    <text x="140" y="122" font-size="80" text-anchor="middle" dominant-baseline="middle">${icons[index]}</text>
+                </svg>
+            `;
+            return 'data:image/svg+xml,' + encodeURIComponent(svg);
+        }
+
+        function adjustColor(color, amount) {
+            const hex = color.replace('#', '');
+            const r = Math.max(0, Math.min(255, parseInt(hex.substr(0, 2), 16) + amount));
+            const g = Math.max(0, Math.min(255, parseInt(hex.substr(2, 2), 16) + amount));
+            const b = Math.max(0, Math.min(255, parseInt(hex.substr(4, 2), 16) + amount));
+            return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            createSnowflakes();
+            createSparkles();
+            initScene1();
+            setTimeout(() => {
+                document.getElementById('loadingOverlay').classList.add('hidden');
+            }, 1000);
+        });
+
+        // Create snowflakes
+        function createSnowflakes() {
+            const container = document.getElementById('snowflakes');
+            const snowflakeChars = ['❄', '❅', '❆', '✦', '✧'];
+            
+            for (let i = 0; i < 50; i++) {
+                const snowflake = document.createElement('div');
+                snowflake.className = 'snowflake';
+                snowflake.textContent = snowflakeChars[Math.floor(Math.random() * snowflakeChars.length)];
+                snowflake.style.left = Math.random() * 100 + '%';
+                snowflake.style.animationDuration = (Math.random() * 5 + 5) + 's';
+                snowflake.style.animationDelay = Math.random() * 5 + 's';
+                snowflake.style.fontSize = (Math.random() * 1 + 0.5) + 'rem';
+                container.appendChild(snowflake);
+            }
+        }
+
+        // Create sparkles around gift
+        function createSparkles() {
+            const container = document.getElementById('sparkles');
+            for (let i = 0; i < 12; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                const angle = (i / 12) * Math.PI * 2;
+                const radius = 120 + Math.random() * 30;
+                sparkle.style.left = (150 + Math.cos(angle) * radius) + 'px';
+                sparkle.style.top = (150 + Math.sin(angle) * radius) + 'px';
+                sparkle.style.animationDelay = (i * 0.15) + 's';
+                container.appendChild(sparkle);
+            }
+        }
+
+        // Scene 1: Gift Opening
+        function initScene1() {
+            const giftContainer = document.getElementById('giftContainer');
+            giftContainer.addEventListener('click', openGift);
+        }
+
+        function openGift() {
+            const giftBox = document.getElementById('giftBox');
+            giftBox.classList.add('opening');
+            
+            // Create burst effect
+            createBurstEffect();
+            
+            setTimeout(() => {
+                transitionToScene(2);
+            }, 1500);
+        }
+
+        function createBurstEffect() {
+            const container = document.getElementById('giftContainer');
+            const emojis = ['🎁', '⭐', '✨', '🎄', '🎅', '❄️', '🔔', '🎀'];
+            
+            for (let i = 0; i < 20; i++) {
+                const burst = document.createElement('div');
+                burst.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+                burst.style.position = 'absolute';
+                burst.style.fontSize = '2rem';
+                burst.style.left = '100px';
+                burst.style.top = '100px';
+                burst.style.transition = 'all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                burst.style.opacity = '1';
+                container.appendChild(burst);
+                
+                setTimeout(() => {
+                    const angle = (i / 20) * Math.PI * 2;
+                    const distance = 150 + Math.random() * 100;
+                    burst.style.left = (100 + Math.cos(angle) * distance) + 'px';
+                    burst.style.top = (100 + Math.sin(angle) * distance) + 'px';
+                    burst.style.opacity = '0';
+                }, 50);
+            }
+        }
+
+        // Scene transitions
+        function transitionToScene(sceneNumber) {
+            document.querySelectorAll('.scene').forEach(scene => {
+                scene.classList.remove('active');
+            });
+            
+            setTimeout(() => {
+                document.getElementById(`scene${sceneNumber}`).classList.add('active');
+                currentScene = sceneNumber;
+                
+                if (sceneNumber === 2) {
+                    initScene2();
+                } else if (sceneNumber === 3) {
+                    initScene3();
+                }
+            }, 300);
+        }
+
+        // Scene 2: Camera & Hand Detection
+        async function initScene2() {
+            const video = document.getElementById('videoElement');
+            const canvas = document.getElementById('canvasElement');
+            const ctx = canvas.getContext('2d');
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 },
+                        facingMode: 'user'
+                    } 
+                });
+                video.srcObject = stream;
+                
+                video.onloadedmetadata = () => {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                };
+
+                // Initialize MediaPipe Hands
+                hands = new Hands({
+                    locateFile: (file) => {
+                        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+                    }
+                });
+
+                hands.setOptions({
+                    maxNumHands: 1,
+                    modelComplexity: 1,
+                    minDetectionConfidence: 0.7,
+                    minTrackingConfidence: 0.5
+                });
+
+                hands.onResults(onHandResults);
+
+                camera = new Camera(video, {
+                    onFrame: async () => {
+                        await hands.send({ image: video });
+                    },
+                    width: 1280,
+                    height: 720
+                });
+
+                camera.start();
+
+            } catch (error) {
+                console.error('Camera error:', error);
+                document.getElementById('instructionText').textContent = 
+                    '📷 Camera access needed. Click to retry or skip.';
+                document.getElementById('scene2').onclick = () => transitionToScene(3);
+            }
+        }
+
+        function onHandResults(results) {
+            if (currentScene !== 2 && currentScene !== 3 && currentScene !== 4) return;
+
+            const canvas = document.getElementById('canvasElement');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                
+                // Calculate hand center
+                const palmBase = landmarks[0];
+                const middleFinger = landmarks[9];
+                handPosition.x = (1 - (palmBase.x + middleFinger.x) / 2) * window.innerWidth;
+                handPosition.y = ((palmBase.y + middleFinger.y) / 2) * window.innerHeight;
+
+                // Update hand cursor for scene 3 and 4
+                if (currentScene === 3 || currentScene === 4) {
+                    const cursor = document.getElementById('handCursor');
+                    cursor.style.left = handPosition.x + 'px';
+                    cursor.style.top = handPosition.y + 'px';
+                    cursor.style.display = 'block';
+                }
+
+                // Check if hand is open or closed
+                const isOpen = checkHandOpen(landmarks);
+                const pinching = checkPinchGesture(landmarks);
+
+                if (currentScene === 2) {
+                    handleScene2Logic(landmarks, isOpen, palmBase);
+                } else if (currentScene === 3) {
+                    handleScene3Logic(landmarks, pinching);
+                } else if (currentScene === 4) {
+                    handleScene4Logic(pinching);
+                }
+
+                handDetected = true;
+            } else {
+                if (currentScene === 3 || currentScene === 4) {
+                    document.getElementById('handCursor').style.display = 'none';
+                }
+            }
+        }
+
+        function checkHandOpen(landmarks) {
+            // Check if fingers are extended
+            const fingerTips = [8, 12, 16, 20]; // Index, middle, ring, pinky tips
+            const fingerBases = [5, 9, 13, 17]; // Finger bases
+            
+            let extendedFingers = 0;
+            for (let i = 0; i < fingerTips.length; i++) {
+                if (landmarks[fingerTips[i]].y < landmarks[fingerBases[i]].y) {
+                    extendedFingers++;
+                }
+            }
+            
+            return extendedFingers >= 3;
+        }
+
+        function checkPinchGesture(landmarks) {
+            const thumbTip = landmarks[4];
+            const indexTip = landmarks[8];
+            
+            const distance = Math.sqrt(
+                Math.pow(thumbTip.x - indexTip.x, 2) +
+                Math.pow(thumbTip.y - indexTip.y, 2)
+            );
+            
+            return distance < 0.05;
+        }
+
+        function handleScene2Logic(landmarks, isOpen, palmBase) {
+            const instruction = document.getElementById('instructionText');
+            
+            if (!treeCreated) {
+                if (isOpen && !isHandOpen) {
+                    instruction.textContent = '🎄 Open your hand to grow the tree!';
+                    setTimeout(() => {
+                        createEmojiTree(palmBase);
+                        treeCreated = true;
+                        instruction.textContent = '✊ Close and open again to spread the magic!';
+                    }, 500);
+                } else if (!isOpen) {
+                    instruction.textContent = '✋ Open your hand!';
+                }
+            } else if (!treeExploded) {
+                if (!isOpen && isHandOpen) {
+                    // Hand just closed
+                    instruction.textContent = '✋ Now open your hand!';
+                } else if (isOpen && !isHandOpen) {
+                    // Hand just opened after closing
+                    explodeTree();
+                    treeExploded = true;
+                    instruction.textContent = '✨ Magic!';
+                    setTimeout(() => {
+                        transitionToScene(3);
+                    }, 2000);
+                }
+            }
+            
+            isHandOpen = isOpen;
+            
+            // Update tree position if it exists
+            if (treeCreated && !treeExploded) {
+                updateTreePosition(palmBase);
+            }
+        }
+
+        function createEmojiTree(palmBase) {
+            const container = document.getElementById('emojiTreeContainer');
+            container.innerHTML = '';
+            emojiElements = [];
+            
+            const treeEmojis = ['🎄', '⭐', '🎁', '🔔', '❄️', '✨', '🎀', '🌟', '🍪', '🥛'];
+            const rows = 6;
+            
+            for (let row = 0; row < rows; row++) {
+                const emojisInRow = row + 1;
+                for (let col = 0; col < emojisInRow; col++) {
+                    const emoji = document.createElement('div');
+                    emoji.className = 'emoji';
+                    emoji.textContent = row === 0 ? '⭐' : treeEmojis[Math.floor(Math.random() * treeEmojis.length)];
+                    
+                    const offsetX = (col - emojisInRow / 2 + 0.5) * 40;
+                    const offsetY = -row * 35 - 50;
+                    
+                    emoji.dataset.offsetX = offsetX;
+                    emoji.dataset.offsetY = offsetY;
+                    
+                    container.appendChild(emoji);
+                    emojiElements.push(emoji);
+                }
+            }
+            
+            updateTreePosition(palmBase);
+        }
+
+        function updateTreePosition(palmBase) {
+            const container = document.getElementById('emojiTreeContainer');
+            const baseX = (1 - palmBase.x) * window.innerWidth;
+            const baseY = palmBase.y * window.innerHeight;
+            
+            emojiElements.forEach(emoji => {
+                const offsetX = parseFloat(emoji.dataset.offsetX);
+                const offsetY = parseFloat(emoji.dataset.offsetY);
+                emoji.style.left = (baseX + offsetX) + 'px';
+                emoji.style.top = (baseY + offsetY) + 'px';
+            });
+        }
+
+        function explodeTree() {
+            emojiElements.forEach((emoji, index) => {
+                emoji.classList.add('exploding');
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 200 + Math.random() * 300;
+                const currentX = parseFloat(emoji.style.left);
+                const currentY = parseFloat(emoji.style.top);
+                
+                setTimeout(() => {
+                    emoji.style.left = (currentX + Math.cos(angle) * distance) + 'px';
+                    emoji.style.top = (currentY + Math.sin(angle) * distance) + 'px';
+                    emoji.style.opacity = '0';
+                    emoji.style.transform = `scale(2) rotate(${Math.random() * 720}deg)`;
+                }, index * 30);
+            });
+        }
+
+        // Scene 3: Photo Selection
+        function initScene3() {
+            const container = document.getElementById('carouselContainer');
+            container.innerHTML = '';
+            
+            photos.forEach((photo, index) => {
+                const card = document.createElement('div');
+                card.className = 'photo-card';
+                card.dataset.index = index;
+                
+                const img = document.createElement('img');
+                img.src = createPhotoSVG(index, photo.color);
+                img.alt = photo.title;
+                
+                const title = document.createElement('div');
+                title.className = 'photo-title';
+                title.textContent = photo.title;
+                
+                card.appendChild(img);
+                card.appendChild(title);
+                container.appendChild(card);
+                
+                // Position cards in 3D carousel
+                const angle = (index / photos.length) * Math.PI * 2;
+                const radius = 350;
+                card.style.transform = `
+                    rotateY(${angle * (180 / Math.PI)}deg)
+                    translateZ(${radius}px)
+                `;
+            });
+            
+            updateCarouselSelection();
+        }
+
+        function handleScene3Logic(landmarks, pinching) {
+            // Rotate carousel based on hand position
+            const handX = 1 - landmarks[0].x;
+            const targetRotation = (handX - 0.5) * 360;
+            carouselRotation += (targetRotation - carouselRotation) * 0.1;
+            
+            const container = document.getElementById('carouselContainer');
+            container.style.transform = `rotateY(${carouselRotation}deg)`;
+            
+            // Determine selected photo based on rotation
+            const normalizedRotation = ((carouselRotation % 360) + 360) % 360;
+            selectedPhotoIndex = Math.round(normalizedRotation / (360 / photos.length)) % photos.length;
+            selectedPhotoIndex = (photos.length - selectedPhotoIndex) % photos.length;
+            
+            updateCarouselSelection();
+            
+            // Check for pinch gesture
+            const now = Date.now();
+            if (pinching && !isPinching && now - lastPinchTime > 1000) {
+                lastPinchTime = now;
+                showPhotoDetail();
+            }
+            isPinching = pinching;
+        }
+
+        function updateCarouselSelection() {
+            document.querySelectorAll('.photo-card').forEach((card, index) => {
+                if (index === selectedPhotoIndex) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            });
+        }
+
+        function showPhotoDetail() {
+            const photo = photos[selectedPhotoIndex];
+            document.getElementById('detailImage').src = createPhotoSVG(selectedPhotoIndex, photo.color);
+            
+            // Create decorations
+            const decorContainer = document.getElementById('christmasDecorations');
+            decorContainer.innerHTML = '';
+            
+            const decorations = ['🎄', '⭐', '🎁', '❄️', '🔔', '🎀', '✨', '🌟'];
+            for (let i = 0; i < 16; i++) {
+                const decor = document.createElement('div');
+                decor.className = 'decoration';
+                decor.textContent = decorations[i % decorations.length];
+                decor.style.left = Math.random() * 100 + '%';
+                decor.style.top = Math.random() * 100 + '%';
+                decor.style.animationDelay = (Math.random() * 2) + 's';
+                decorContainer.appendChild(decor);
+            }
+            
+            transitionToScene(4);
+        }
+
+        function handleScene4Logic(pinching) {
+            const now = Date.now();
+            if (pinching && !isPinching && now - lastPinchTime > 1000) {
+                lastPinchTime = now;
+                transitionToScene(3);
+            }
+            isPinching = pinching;
+        }
+
+        // Fallback click handlers for testing without camera
+        document.getElementById('scene3').addEventListener('click', (e) => {
+            if (e.target.closest('.photo-card')) {
+                const index = parseInt(e.target.closest('.photo-card').dataset.index);
+                selectedPhotoIndex = index;
+                showPhotoDetail();
+            }
+        });
+
+        document.getElementById('scene4').addEventListener('click', () => {
+            transitionToScene(3);
+        });
+    </script>
+</body>
+</html>        }
 
         .bow-loop {
             width: 30px;
